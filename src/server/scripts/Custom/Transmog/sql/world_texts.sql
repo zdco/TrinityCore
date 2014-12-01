@@ -1,18 +1,26 @@
 SET @TEXT_ID := 50000;
-INSERT INTO `npc_text` (`ID`, `text0_0`) VALUES
-(@TEXT_ID, 'Transmogrification allows you to change how your items look like without changing the stats of the items.\r\nItems used in transmogrification are no longer refundable, tradeable and are bound to you.\r\nUpdating a menu updates the view and prices.\r\n\r\nNot everything can be transmogrified with eachother.\r\nRestrictions include but are not limited to:\r\nOnly armor and weapons can be transmogrified\r\nGuns, bows and crossbows can be transmogrified with eachother\r\nFishing poles can not be transmogrified\r\nYou must be able to equip both items used in the process.\r\n\r\nTransmogrifications stay on your items as long as you own them.\r\nIf you try to put the item in guild bank or mail it to someone else, the transmogrification is stripped.\r\n\r\nYou can also remove transmogrifications for free at the transmogrifier.'),
-(@TEXT_ID+1, 'You can save your own transmogrification sets.\r\n\r\nTo save, first you must transmogrify your equipped items.\r\nThen when you go to the set management menu and go to save set menu,\r\nall items you have transmogrified are displayed so you see what you are saving.\r\nIf you think the set is fine, you can click to save the set and name it as you wish.\r\n\r\nTo use a set you can click the saved set in the set management menu and then select use set.\r\nIf the set has a transmogrification for an item that is already transmogrified, the old transmogrification is lost.\r\nNote that same transmogrification restrictions apply when trying to use a set as in normal transmogrification.\r\n\r\nTo delete a set you can go to the set\'s menu and select delete set.');
-
 SET @STRING_ENTRY := 11100;
+
+-- Deleting code
+
+DELETE FROM npc_text WHERE ID >= @TEXT_ID and ID <= @TEXT_ID+1;
+DELETE FROM trinity_string WHERE entry >= @STRING_ENTRY and entry <= @STRING_ENTRY+10;
+
+-- world text
+
+INSERT INTO `npc_text` (`ID`, `text0_0`) VALUES
+(@TEXT_ID, '幻化可以让你在不改变装备的属性的同时改变装备的外观。\r\n在幻化中使用的装备不能退还、交易，并会与你绑定。\r\n更新菜单来更新界面和价格。\r\n\r\n不是所有的物品都能彼此幻化。\r\n限制但不限于：\r\n只有盔甲和武器可以被幻化\r\n枪、弓和弩可以被彼此幻化\r\n钓鱼竿不能被幻化\r\n你必须能够穿戴在幻化中使用的装备\r\n\r\n装备的幻化会一直存在，只要你拥有它们。\r\n如果你试图把它们放到公会银行或者邮寄给别人时，幻化会被剥离。\r\n\r\n你可以免费在幻化师处取消装备幻化。'),
+(@TEXT_ID+1, '你可以保存自己的幻化设置。\r\n\r\n为了保存，首先你必须幻化已装备的物品。\r\n然后，当你进入设置管理菜单，保存设置，\r\n所有你已经幻化的物品会被显示出来，让你能看到你所保存的设置。\r\n如果你认为设置是正确的，你可以点击保存设置，并为其命名。\r\n\r\n需要使用设置，你可以点击在设置管理菜单中保存的设置，然后选择使用设置。\r\n如果该设置要幻化一个已经被幻化的物品，旧的幻化会被丢失。\r\n需要注意的是，当尝试使用一般的幻化设置时，相同的幻化限制使用。\r\n\r\n要删除一个幻化设置，你可以进入设置菜单，然后选择删除设置。');
+
 INSERT INTO `trinity_string` (`entry`, `content_default`) VALUES
-(@STRING_ENTRY+0, 'Item transmogrified'),
-(@STRING_ENTRY+1, 'Equipment slot is empty'),
-(@STRING_ENTRY+2, 'Invalid source item selected'),
-(@STRING_ENTRY+3, 'Source item does not exist'),
-(@STRING_ENTRY+4, 'Destination item does not exist'),
-(@STRING_ENTRY+5, 'Selected items are invalid'),
-(@STRING_ENTRY+6, 'Not enough money'),
-(@STRING_ENTRY+7, 'You don\'t have enough tokens'),
-(@STRING_ENTRY+8, 'Transmogrifications removed'),
-(@STRING_ENTRY+9, 'There are no transmogrifications'),
-(@STRING_ENTRY+10, 'Invalid name inserted');
+(@STRING_ENTRY+0, '物品已幻化'),
+(@STRING_ENTRY+1, '装备槽是空的'),
+(@STRING_ENTRY+2, '选择了无效的来源物品'),
+(@STRING_ENTRY+3, '来源物品不存在'),
+(@STRING_ENTRY+4, '目标物品不存在'),
+(@STRING_ENTRY+5, '选择的物品是无效的'),
+(@STRING_ENTRY+6, '金币不足'),
+(@STRING_ENTRY+7, '你没有足够的代币'),
+(@STRING_ENTRY+8, '幻化已删除'),
+(@STRING_ENTRY+9, '没有幻化'),
+(@STRING_ENTRY+10, '输入了无效的名字');
