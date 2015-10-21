@@ -148,6 +148,7 @@ struct ReforgeData
     int32 stat_value;
 };
 typedef std::unordered_map<uint32, ReforgeData> ReforgeMapType;
+
 typedef std::unordered_map<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
