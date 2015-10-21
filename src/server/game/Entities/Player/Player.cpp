@@ -28,6 +28,7 @@
 #include "AnticheatMgr.h"
 // 10
 
+#include "../../../scripts/Custom/Transmog/Transmogrification.h"
 #include "Player.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
@@ -91,7 +92,6 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "GameObjectAI.h"
-#include "../../../scripts/Custom/Transmog/Transmogrification.h"
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif

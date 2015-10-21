@@ -1,7 +1,26 @@
-#include "ScriptPCH.h"
-#include "Config.h"
-#include "Language.h"
 #include "Transmogrification.h"
+#include "Bag.h"
+#include "Common.h"
+#include "Config.h"
+#include "DatabaseEnv.h"
+#include "DBCStructure.h"
+#include "Define.h"
+#include "Field.h"
+#include "GameEventMgr.h"
+#include "Item.h"
+#include "ItemPrototype.h"
+#include "Language.h"
+#include "Log.h"
+#include "ObjectGuid.h"
+#include "ObjectMgr.h"
+#include "Player.h"
+#include "QueryResult.h"
+#include "ScriptMgr.h"
+#include "SharedDefines.h"
+#include "Transaction.h"
+#include "WorldSession.h"
+#include <sstream>
+#include <string>
 
 #ifdef PRESETS
 void Transmogrification::PresetTransmog(Player* player, Item* itemTransmogrified, uint32 fakeEntry, uint8 slot)
@@ -32,7 +51,7 @@ void Transmogrification::LoadPlayerSets(Player* player)
 
     player->presetMap.clear();
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT `PresetID`, `SetName`, `SetData` FROM `custom_transmogrification_sets` WHERE Owner = %u", player->GetGUIDLow());
+    QueryResult result = CharacterDatabase.PQuery("SELECT `PresetID`, `SetName`, `SetData` FROM `custom_transmogrification_sets` WHERE Owner = %u", player->GetGUID().GetCounter());
     if (!result)
         return;
 
@@ -54,7 +73,7 @@ void Transmogrification::LoadPlayerSets(Player* player)
                 break;
             if (slot >= EQUIPMENT_SLOT_END)
             {
-                TC_LOG_ERROR("custom.transmog", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) has invalid slot, ignoring.", entry, player->GetGUIDLow(), uint32(slot), uint32(PresetID));
+                TC_LOG_ERROR("custom.transmog", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) has invalid slot, ignoring.", entry, player->GetGUID().GetCounter(), uint32(slot), uint32(PresetID));
                 continue;
             }
             if (sObjectMgr->GetItemTemplate(entry))
@@ -62,14 +81,14 @@ void Transmogrification::LoadPlayerSets(Player* player)
                 player->presetMap[PresetID].slotMap[slot] = entry;
             }
             else
-                TC_LOG_ERROR("custom.transmog", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) does not exist, ignoring.", entry, player->GetGUIDLow(), uint32(slot), uint32(PresetID));
+                TC_LOG_ERROR("custom.transmog", "Item entry (FakeEntry: %u, playerGUID: %u, slot: %u, presetId: %u) does not exist, ignoring.", entry, player->GetGUID().GetCounter(), uint32(slot), uint32(PresetID));
         }
 
         if (player->presetMap[PresetID].slotMap.empty())
         {
             // Should never happen
             player->presetMap.erase(PresetID);
-            CharacterDatabase.PExecute("DELETE FROM `custom_transmogrification_sets` WHERE Owner = %u AND PresetID = %u", player->GetGUIDLow(), uint32(PresetID));
+            CharacterDatabase.PExecute("DELETE FROM `custom_transmogrification_sets` WHERE Owner = %u AND PresetID = %u", player->GetGUID().GetCounter(), uint32(PresetID));
             return;
         }
 
@@ -361,7 +380,10 @@ bool Transmogrification::CanTransmogrifyItemWithItem(Player* player, ItemTemplat
     if (source->ItemId == target->ItemId)
         return false;
 
-    if (!SuitableForTransmogrification(player, target) || !SuitableForTransmogrification(player, source)) // if (!transmogrified->CanTransmogrify() || !transmogrifier->CanBeTransmogrified())
+    if (source->DisplayInfoID == target->DisplayInfoID)
+        return false;
+
+    if (source->Class != target->Class)
         return false;
 
     if (source->InventoryType == INVTYPE_BAG ||
@@ -373,8 +395,19 @@ bool Transmogrification::CanTransmogrifyItemWithItem(Player* player, ItemTemplat
         source->InventoryType == INVTYPE_QUIVER)
         return false;
 
-    // TC doesnt check this? Checked by Inventory type check.
-    if (source->Class != target->Class)
+    if (target->InventoryType == INVTYPE_BAG ||
+        target->InventoryType == INVTYPE_RELIC ||
+        // target->InventoryType == INVTYPE_BODY ||
+        target->InventoryType == INVTYPE_FINGER ||
+        target->InventoryType == INVTYPE_TRINKET ||
+        target->InventoryType == INVTYPE_AMMO ||
+        target->InventoryType == INVTYPE_QUIVER)
+        return false;
+
+    if (!SuitableForTransmogrification(player, target) || !SuitableForTransmogrification(player, source)) // if (!transmogrified->CanTransmogrify() || !transmogrifier->CanBeTransmogrified())
+        return false;
+
+    if (IsRangedWeapon(source->Class, source->SubClass) != IsRangedWeapon(target->Class, target->SubClass))
         return false;
 
     if (source->SubClass != target->SubClass && !IsRangedWeapon(target->Class, target->SubClass))
@@ -387,14 +420,15 @@ bool Transmogrification::CanTransmogrifyItemWithItem(Player* player, ItemTemplat
 
     if (source->InventoryType != target->InventoryType)
     {
-        if (source->Class == ITEM_CLASS_WEAPON &&
-            (IsRangedWeapon(target->Class, target->SubClass) != IsRangedWeapon(source->Class, source->SubClass) ||
-            source->InventoryType == INVTYPE_WEAPONMAINHAND ||
-            source->InventoryType == INVTYPE_WEAPONOFFHAND))
+        if (source->Class == ITEM_CLASS_WEAPON && !((IsRangedWeapon(target->Class, target->SubClass) ||
+            ((target->InventoryType == INVTYPE_WEAPON || target->InventoryType == INVTYPE_2HWEAPON) &&
+                (source->InventoryType == INVTYPE_WEAPON || source->InventoryType == INVTYPE_2HWEAPON)) ||
+            ((target->InventoryType == INVTYPE_WEAPONMAINHAND || target->InventoryType == INVTYPE_WEAPONOFFHAND) &&
+                (source->InventoryType == INVTYPE_WEAPON || source->InventoryType == INVTYPE_2HWEAPON)))))
             return false;
         if (source->Class == ITEM_CLASS_ARMOR &&
-            !((source->InventoryType == INVTYPE_CHEST && target->InventoryType == INVTYPE_ROBE) ||
-            (source->InventoryType == INVTYPE_ROBE && target->InventoryType == INVTYPE_CHEST)))
+            !((source->InventoryType == INVTYPE_CHEST || source->InventoryType == INVTYPE_ROBE) &&
+                (target->InventoryType == INVTYPE_CHEST || target->InventoryType == INVTYPE_ROBE)))
             return false;
     }
 
@@ -722,7 +756,7 @@ namespace
 
         void OnSave(Player* player) override
         {
-            uint32 lowguid = player->GetGUIDLow();
+            uint32 lowguid = player->GetGUID().GetCounter();
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
             trans->PAppend("DELETE FROM `custom_transmogrification` WHERE `Owner` = %u", lowguid);
 #ifdef PRESETS
@@ -762,14 +796,14 @@ namespace
 
         void OnLogin(Player* player, bool /*firstLogin*/) override
         {
-            QueryResult result = CharacterDatabase.PQuery("SELECT GUID, FakeEntry FROM custom_transmogrification WHERE Owner = %u", player->GetGUIDLow());
+            QueryResult result = CharacterDatabase.PQuery("SELECT GUID, FakeEntry FROM custom_transmogrification WHERE Owner = %u", player->GetGUID().GetCounter());
 
             if (result)
             {
                 do
                 {
                     Field* field = result->Fetch();
-                    ObjectGuid itemGUID(HIGHGUID_ITEM, 0, field[0].GetUInt32());
+                    ObjectGuid itemGUID(HighGuid::Item, 0, field[0].GetUInt32());
                     uint32 fakeEntry = field[1].GetUInt32();
                     // Only load items that are in inventory / bank / etc
                     if (sObjectMgr->GetItemTemplate(fakeEntry) && player->GetItemByGuid(itemGUID))
@@ -780,7 +814,7 @@ namespace
                     {
                         // Ignore, will be erased on next save.
                         // Additionally this can happen if an item was deleted from DB but still exists for the player
-                        // TC_LOG_ERROR("custom.transmog", "Item entry (Entry: %u, itemGUID: %u, playerGUID: %u) does not exist, ignoring.", fakeEntry, GUID_LOPART(itemGUID), player->GetGUIDLow());
+                        // TC_LOG_ERROR("custom.transmog", "Item entry (Entry: %u, itemGUID: %u, playerGUID: %u) does not exist, ignoring.", fakeEntry, GUID_LOPART(itemGUID), player->GetGUID().GetCounter());
                         // CharacterDatabase.PExecute("DELETE FROM custom_transmogrification WHERE FakeEntry = %u", fakeEntry);
                     }
                 } while (result->NextRow());

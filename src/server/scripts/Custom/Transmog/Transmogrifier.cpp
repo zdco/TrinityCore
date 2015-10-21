@@ -14,10 +14,32 @@ Cant transmogrify rediculus items // Foereaper: would be fun to stab people with
 -- Cant think of any good way to handle this easily, could rip flagged items from cata DB
 */
 
-#include "ScriptPCH.h"
-#include "Config.h"
-#include "Language.h"
 #include "Transmogrification.h"
+#include "Bag.h"
+#include "Common.h"
+#include "Config.h"
+#include "Creature.h"
+#include "DatabaseEnv.h"
+#include "DBCStructure.h"
+#include "Define.h"
+#include "Field.h"
+#include "GameEventMgr.h"
+#include "GossipDef.h"
+#include "Item.h"
+#include "ItemPrototype.h"
+#include "Language.h"
+#include "Log.h"
+#include "Player.h"
+#include "ObjectGuid.h"
+#include "ObjectMgr.h"
+#include "QueryResult.h"
+#include "ScriptedGossip.h"
+#include "ScriptMgr.h"
+#include "SharedDefines.h"
+#include "Transaction.h"
+#include "WorldSession.h"
+#include <sstream>
+#include <string>
 
 #define GTS session->GetTrinityString
 
@@ -237,7 +259,7 @@ namespace
                         return true;
                     }
                     // sender = slot, action = display
-                    TransmogTrinityStrings res = sTransmogrification->Transmogrify(player, ObjectGuid(HIGHGUID_ITEM, 0, action), sender);
+                    TransmogTrinityStrings res = sTransmogrification->Transmogrify(player, ObjectGuid(HighGuid::Item, 0, action), sender);
                     if (res == LANG_ERR_TRANSMOG_OK)
                         session->SendAreaTriggerMessage("%s", GTS(LANG_ERR_TRANSMOG_OK));
                     else
@@ -360,7 +382,7 @@ namespace
                     if (sTransmogrification->GetFakeEntry(oldItem) == newItem->GetEntry())
                         continue;
                     ++limit;
-                    player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_MONEY_BAG, sTransmogrification->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sTransmogrification->GetItemLink(newItem, session), slot, newItem->GetGUIDLow(), "使用此设置来幻化将会绑定幻化物品，物品将不退还且不能交易。\n你确定要继续？\n\n" + sTransmogrification->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sTransmogrification->GetItemLink(newItem, session) + ss.str(), price, false);
+                    player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_MONEY_BAG, sTransmogrification->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sTransmogrification->GetItemLink(newItem, session), slot, newItem->GetGUID().GetCounter(), "Using this item for transmogrify will bind it to you and make it non-refundable and non-tradeable.\nDo you wish to continue?\n\n" + sTransmogrification->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sTransmogrification->GetItemLink(newItem, session) + ss.str(), price, false);
                 }
 
                 for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
@@ -380,7 +402,7 @@ namespace
                         if (sTransmogrification->GetFakeEntry(oldItem) == newItem->GetEntry())
                             continue;
                         ++limit;
-                        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_MONEY_BAG, sTransmogrification->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sTransmogrification->GetItemLink(newItem, session), slot, newItem->GetGUIDLow(), "使用此设置来幻化将会绑定幻化物品，物品将不退还且不能交易。\n你确定要继续？\n\n" + sTransmogrification->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sTransmogrification->GetItemLink(newItem, session) + ss.str(), price, false);
+                        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_MONEY_BAG, sTransmogrification->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sTransmogrification->GetItemLink(newItem, session), slot, newItem->GetGUID().GetCounter(), "Using this item for transmogrify will bind it to you and make it non-refundable and non-tradeable.\nDo you wish to continue?\n\n" + sTransmogrification->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sTransmogrification->GetItemLink(newItem, session) + ss.str(), price, false);
                     }
                 }
             }
