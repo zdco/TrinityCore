@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -155,6 +155,7 @@ enum CreaturesIds
     NPC_ALCHEMIST_ADRIANNA                      = 38501,
     NPC_ALRIN_THE_AGILE                         = 38551,
     NPC_INFILTRATOR_MINCHAR_BQ                  = 38558,
+    NPC_INFILTRATOR_MINCHAR_BQ_25               = 39123,
     NPC_MINCHAR_BEAM_STALKER                    = 38557,
     NPC_VALITHRIA_DREAMWALKER_QUEST             = 38589,
 
@@ -524,14 +525,16 @@ enum AreaIds
 class spell_trigger_spell_from_caster : public SpellScriptLoader
 {
     public:
-        spell_trigger_spell_from_caster(char const* scriptName, uint32 triggerId) : SpellScriptLoader(scriptName), _triggerId(triggerId) { }
+        spell_trigger_spell_from_caster(char const* scriptName, uint32 triggerId, TriggerCastFlags triggerFlags = TRIGGERED_FULL_MASK)
+            : SpellScriptLoader(scriptName), _triggerId(triggerId), _triggerFlags(triggerFlags) { }
 
         class spell_trigger_spell_from_caster_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_trigger_spell_from_caster_SpellScript);
 
         public:
-            spell_trigger_spell_from_caster_SpellScript(uint32 triggerId) : SpellScript(), _triggerId(triggerId) { }
+            spell_trigger_spell_from_caster_SpellScript(uint32 triggerId, TriggerCastFlags triggerFlags)
+                : SpellScript(), _triggerId(triggerId), _triggerFlags(triggerFlags) { }
 
             bool Validate(SpellInfo const* /*spell*/) override
             {
@@ -542,7 +545,7 @@ class spell_trigger_spell_from_caster : public SpellScriptLoader
 
             void HandleTrigger()
             {
-                GetCaster()->CastSpell(GetHitUnit(), _triggerId, true);
+                GetCaster()->CastSpell(GetHitUnit(), _triggerId, _triggerFlags);
             }
 
             void Register() override
@@ -551,15 +554,17 @@ class spell_trigger_spell_from_caster : public SpellScriptLoader
             }
 
             uint32 _triggerId;
+            TriggerCastFlags _triggerFlags;
         };
 
         SpellScript* GetSpellScript() const override
         {
-            return new spell_trigger_spell_from_caster_SpellScript(_triggerId);
+            return new spell_trigger_spell_from_caster_SpellScript(_triggerId, _triggerFlags);
         }
 
     private:
         uint32 _triggerId;
+        TriggerCastFlags _triggerFlags;
 };
 
 template<class AI>

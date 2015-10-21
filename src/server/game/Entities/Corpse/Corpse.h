@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -55,14 +55,15 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-        bool Create(uint32 guidlow, Map* map);
-        bool Create(uint32 guidlow, Player* owner);
+        bool Create(ObjectGuid::LowType guidlow, Map* map);
+        bool Create(ObjectGuid::LowType guidlow, Player* owner);
 
         void SaveToDB();
-        bool LoadCorpseFromDB(uint32 guid, Field* fields);
+        bool LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields);
 
         void DeleteBonesFromWorld();
         void DeleteFromDB(SQLTransaction& trans);
+        static void DeleteFromDB(ObjectGuid const& ownerGuid, SQLTransaction& trans);
 
         ObjectGuid GetOwnerGUID() const { return GetGuidValue(CORPSE_FIELD_OWNER); }
 

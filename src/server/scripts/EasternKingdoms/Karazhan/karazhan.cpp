@@ -1,5 +1,5 @@
  /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,7 +25,6 @@ EndScriptData */
 
 /* ContentData
 npc_barnes
-npc_berthold
 npc_image_of_medivh
 EndContentData */
 
@@ -360,17 +359,17 @@ public:
             case GOSSIP_ACTION_INFO_DEF+3:
                 player->CLOSE_GOSSIP_MENU();
                 pBarnesAI->m_uiEventId = EVENT_OZ;
-                TC_LOG_INFO("scripts", "player (%s) manually set Opera event to EVENT_OZ", player->GetGUID().ToString().c_str());
+                TC_LOG_DEBUG("scripts", "player (%s) manually set Opera event to EVENT_OZ", player->GetGUID().ToString().c_str());
                 break;
             case GOSSIP_ACTION_INFO_DEF+4:
                 player->CLOSE_GOSSIP_MENU();
                 pBarnesAI->m_uiEventId = EVENT_HOOD;
-                TC_LOG_INFO("scripts", "player (%s) manually set Opera event to EVENT_HOOD", player->GetGUID().ToString().c_str());
+                TC_LOG_DEBUG("scripts", "player (%s) manually set Opera event to EVENT_HOOD", player->GetGUID().ToString().c_str());
                 break;
             case GOSSIP_ACTION_INFO_DEF+5:
                 player->CLOSE_GOSSIP_MENU();
                 pBarnesAI->m_uiEventId = EVENT_RAJ;
-                TC_LOG_INFO("scripts", "player (%s) manually set Opera event to EVENT_RAJ", player->GetGUID().ToString().c_str());
+                TC_LOG_DEBUG("scripts", "player (%s) manually set Opera event to EVENT_RAJ", player->GetGUID().ToString().c_str());
                 break;
         }
 
@@ -412,41 +411,6 @@ public:
     CreatureAI* GetAI(Creature* creature) const override
     {
         return GetInstanceAI<npc_barnesAI>(creature);
-    }
-};
-
-/*###
-# npc_berthold
-####*/
-
-#define GOSSIP_ITEM_TELEPORT    "Teleport me to the Guardian's Library"
-
-class npc_berthold : public CreatureScript
-{
-public:
-    npc_berthold() : CreatureScript("npc_berthold") { }
-
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action) override
-    {
-        player->PlayerTalkClass->ClearMenus();
-        if (action == GOSSIP_ACTION_INFO_DEF + 1)
-            player->CastSpell(player, SPELL_TELEPORT, true);
-
-        player->CLOSE_GOSSIP_MENU();
-        return true;
-    }
-
-    bool OnGossipHello(Player* player, Creature* creature) override
-    {
-        if (InstanceScript* instance = creature->GetInstanceScript())
-        {
-            // Check if Shade of Aran event is done
-            if (instance->GetData(TYPE_ARAN) == DONE)
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TELEPORT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        }
-
-        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
-        return true;
     }
 };
 
@@ -552,11 +516,11 @@ public:
             YellTimer = 10000;
         }
 
-        uint32 NextStep(uint32 Step)
+        uint32 NextStep(uint32 step)
         {
             Creature* arca = ObjectAccessor::GetCreature(*me, ArcanagosGUID);
             Map* map = me->GetMap();
-            switch (Step)
+            switch (step)
             {
             case 0: return 9999999;
             case 1:
@@ -668,6 +632,5 @@ public:
 void AddSC_karazhan()
 {
     new npc_barnes();
-    new npc_berthold();
     new npc_image_of_medivh();
 }

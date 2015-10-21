@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -33,7 +33,7 @@ class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovemen
         void DoReset(T*);
         bool DoUpdate(T*, const uint32);
         bool GetResetPos(T*, float& x, float& y, float& z);
-        MovementGeneratorType GetMovementGeneratorType() { return RANDOM_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return RANDOM_MOTION_TYPE; }
     private:
         TimeTrackerSmall i_nextMoveTime;
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -92,7 +92,6 @@ set(scripts_STAT_SRCS
   Kalimdor/RuinsOfAhnQiraj/boss_moam.cpp
   Kalimdor/RuinsOfAhnQiraj/ruins_of_ahnqiraj.h
   Kalimdor/RuinsOfAhnQiraj/boss_kurinnaxx.cpp
-  Kalimdor/zone_mulgore.cpp
   Kalimdor/zone_bloodmyst_isle.cpp
   Kalimdor/zone_thunder_bluff.cpp
   Kalimdor/zone_azshara.cpp
@@ -112,7 +111,6 @@ set(scripts_STAT_SRCS
   Kalimdor/zone_winterspring.cpp
   Kalimdor/zone_thousand_needles.cpp
   Kalimdor/zone_ashenvale.cpp
-  Kalimdor/zone_teldrassil.cpp
   Kalimdor/OnyxiasLair/boss_onyxia.cpp
   Kalimdor/OnyxiasLair/onyxias_lair.h
   Kalimdor/OnyxiasLair/instance_onyxias_lair.cpp

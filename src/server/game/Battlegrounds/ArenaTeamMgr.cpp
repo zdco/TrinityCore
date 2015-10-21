@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,8 +21,8 @@
 #include "Log.h"
 #include "DatabaseEnv.h"
 #include "Language.h"
-#include "ObjectAccessor.h"
 #include "Player.h"
+#include "ObjectAccessor.h"
 
 ArenaTeamMgr::ArenaTeamMgr()
 {
@@ -158,7 +158,7 @@ void ArenaTeamMgr::DistributeArenaPoints()
     for (std::map<uint32, uint32>::iterator playerItr = PlayerPoints.begin(); playerItr != PlayerPoints.end(); ++playerItr)
     {
         // Add points to player if online
-        if (Player* player = ObjectAccessor::FindConnectedPlayer(ObjectGuid(HIGHGUID_PLAYER, playerItr->first)))
+        if (Player* player = ObjectAccessor::FindConnectedPlayer(ObjectGuid(HighGuid::Player, playerItr->first)))
             player->ModifyArenaPoints(playerItr->second, trans);
         else    // Update database
         {

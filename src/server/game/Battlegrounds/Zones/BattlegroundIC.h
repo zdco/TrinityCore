@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -968,7 +968,7 @@ class BattlegroundIC : public Battleground
         Transport* gunshipAlliance;
         Transport* gunshipHorde;
 
-        uint32 GetNextBanner(ICNodePoint* nodePoint, uint32 team, bool returnDefinitve);
+        uint32 GetNextBanner(ICNodePoint* node, uint32 team, bool returnDefinitve);
 
         uint32 GetGateIDFromEntry(uint32 id)
         {
@@ -1013,9 +1013,9 @@ class BattlegroundIC : public Battleground
             return uws;
         }
 
-        void UpdateNodeWorldState(ICNodePoint* nodePoint);
-        void HandleCapturedNodes(ICNodePoint* nodePoint, bool recapture);
-        void HandleContestedNodes(ICNodePoint* nodePoint);
+        void UpdateNodeWorldState(ICNodePoint* node);
+        void HandleCapturedNodes(ICNodePoint* node, bool recapture);
+        void HandleContestedNodes(ICNodePoint* node);
 };
 
 #endif

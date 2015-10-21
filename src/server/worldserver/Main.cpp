@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -44,12 +44,14 @@
 #include "BattlegroundMgr.h"
 #include "TCSoap.h"
 #include "CliRunnable.h"
-#include "SystemConfig.h"
+#include "GitRevision.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif
+#include "DatabaseLoader.h"
+#include "AppenderDB.h"
 
 using namespace boost::program_options;
 
@@ -102,8 +104,8 @@ extern int main(int argc, char** argv)
     std::string configService;
 
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
-    // exit if help is enabled
-    if (vm.count("help"))
+    // exit if help or version is enabled
+    if (vm.count("help") || vm.count("version"))
         return 0;
 
 #ifdef _WIN32
@@ -122,13 +124,11 @@ extern int main(int argc, char** argv)
         return 1;
     }
 
-    if (sConfigMgr->GetBoolDefault("Log.Async.Enable", false))
-    {
-        // If logs are supposed to be handled async then we need to pass the io_service into the Log singleton
-        Log::instance(&_ioService);
-    }
+    sLog->RegisterAppender<AppenderDB>();
+    // If logs are supposed to be handled async then we need to pass the io_service into the Log singleton
+    sLog->Initialize(sConfigMgr->GetBoolDefault("Log.Async.Enable", false) ? &_ioService : nullptr);
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", _FULLVERSION);
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon)", GitRevision::GetFullVersion());
     TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
     TC_LOG_INFO("server.worldserver", " ______                       __");
     TC_LOG_INFO("server.worldserver", "/\\__  _\\       __          __/\\ \\__");
@@ -237,7 +237,7 @@ extern int main(int argc, char** argv)
         TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
     }
 
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", _FULLVERSION);
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
 
     sScriptMgr->OnStartup();
 
@@ -257,10 +257,9 @@ extern int main(int argc, char** argv)
     sWorldSocketMgr.StopNetwork();
 
     sInstanceSaveMgr->Unload();
-    sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
-    sObjectAccessor->UnloadAll();             // unload 'i_player2corpse' storage and remove from world
-    sScriptMgr->Unload();
     sOutdoorPvPMgr->Die();
+    sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
+    sScriptMgr->Unload();
 
 #ifdef ELUNA
     Eluna::Uninitialize();
@@ -314,7 +313,7 @@ void ShutdownCLIThread(std::thread* cliThread)
                 errorBuffer = "Unknown error";
 
             TC_LOG_DEBUG("server.worldserver", "Error cancelling I/O of CliThread, error code %u, detail: %s",
-                errorCode, errorBuffer);
+                uint32(errorCode), errorBuffer);
             LocalFree(errorBuffer);
 
             // send keyboard input to safely unblock the CLI thread
@@ -431,7 +430,7 @@ void FreezeDetectorHandler(const boost::system::error_code& error)
         else if (getMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
         {
             TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
-            ASSERT(false);
+            ABORT();
         }
 
         _freezeCheckTimer.expires_from_now(boost::posix_time::seconds(1));
@@ -454,80 +453,15 @@ bool StartDB()
 {
     MySQL::Library_Init();
 
-    std::string dbString;
-    uint8 asyncThreads, synchThreads;
+    // Load databases
+    DatabaseLoader loader("server.worldserver", DatabaseLoader::DATABASE_NONE);
+    loader
+        .AddDatabase(WorldDatabase, "World")
+        .AddDatabase(CharacterDatabase, "Character")
+        .AddDatabase(LoginDatabase, "Login");
 
-    dbString = sConfigMgr->GetStringDefault("WorldDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR("server.worldserver", "World database not specified in configuration file");
+    if (!loader.Load())
         return false;
-    }
-
-    asyncThreads = uint8(sConfigMgr->GetIntDefault("WorldDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR("server.worldserver", "World database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return false;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("WorldDatabase.SynchThreads", 1));
-    ///- Initialize the world database
-    if (!WorldDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR("server.worldserver", "Cannot connect to world database %s", dbString.c_str());
-        return false;
-    }
-
-    ///- Get character database info from configuration file
-    dbString = sConfigMgr->GetStringDefault("CharacterDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR("server.worldserver", "Character database not specified in configuration file");
-        return false;
-    }
-
-    asyncThreads = uint8(sConfigMgr->GetIntDefault("CharacterDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR("server.worldserver", "Character database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return false;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("CharacterDatabase.SynchThreads", 2));
-
-    ///- Initialize the Character database
-    if (!CharacterDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR("server.worldserver", "Cannot connect to Character database %s", dbString.c_str());
-        return false;
-    }
-
-    ///- Get login database info from configuration file
-    dbString = sConfigMgr->GetStringDefault("LoginDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR("server.worldserver", "Login database not specified in configuration file");
-        return false;
-    }
-
-    asyncThreads = uint8(sConfigMgr->GetIntDefault("LoginDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR("server.worldserver", "Login database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return false;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("LoginDatabase.SynchThreads", 1));
-    ///- Initialise the login database
-    if (!LoginDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR("server.worldserver", "Cannot connect to login database %s", dbString.c_str());
-        return false;
-    }
 
     ///- Get the realm Id from the configuration file
     realmID = sConfigMgr->GetIntDefault("RealmID", 0);
@@ -542,7 +476,7 @@ bool StartDB()
     ClearOnlineAccounts();
 
     ///- Insert version info into DB
-    WorldDatabase.PExecute("UPDATE version SET core_version = '%s', core_revision = '%s'", _FULLVERSION, _HASH);        // One-time query
+    WorldDatabase.PExecute("UPDATE version SET core_version = '%s', core_revision = '%s'", GitRevision::GetFullVersion(), GitRevision::GetHash());        // One-time query
 
     sWorld->LoadDBVersion();
 
@@ -582,6 +516,7 @@ variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile
     options_description all("Allowed options");
     all.add_options()
         ("help,h", "print usage message")
+        ("version,v", "print version build info")
         ("config,c", value<std::string>(&configFile)->default_value(_TRINITY_CORE_CONFIG), "use <arg> as configuration file")
         ;
 #ifdef _WIN32
@@ -604,6 +539,10 @@ variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile
 
     if (vm.count("help")) {
         std::cout << all << "\n";
+    }
+    else if (vm.count("version"))
+    {
+        std::cout << GitRevision::GetFullVersion() << "\n";
     }
 
     return vm;

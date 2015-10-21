@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -119,6 +119,7 @@ public:
             _escalatedStatus = TICKET_ASSIGNED;
     }
     void SetClosedBy(ObjectGuid value) { _closedBy = value; }
+    void SetResolvedBy(ObjectGuid value) { _resolvedBy = value; }
     void SetCompleted() { _completed = true; }
     void SetMessage(std::string const& message)
     {
@@ -158,7 +159,8 @@ private:
     std::string _message;
     uint64 _createTime;
     uint64 _lastModifiedTime;
-    ObjectGuid _closedBy; // 0 = Open, -1 = Console, playerGuid = player abandoned ticket, other = GM who closed it.
+    ObjectGuid _closedBy; // 0 = Open, -1 = Console, playerGuid = player abandoned ticket or read the GM response message, other = GM who closed it.
+    ObjectGuid _resolvedBy; // 0 = Open, -1 = Resolved by Console, GM who resolved it by closing or completing the ticket.
     ObjectGuid _assignedTo;
     std::string _comment;
     bool _completed;
@@ -216,6 +218,7 @@ public:
 
     void AddTicket(GmTicket* ticket);
     void CloseTicket(uint32 ticketId, ObjectGuid source);
+    void ResolveAndCloseTicket(uint32 ticketId, ObjectGuid source); // used when GM resolves a ticket by simply closing it
     void RemoveTicket(uint32 ticketId);
 
     bool GetStatus() const { return _status; }

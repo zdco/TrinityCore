@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -23,27 +23,22 @@
 #include "Common.h"
 #include "ObjectMgr.h"
 #include "World.h"
-#include "WorldSession.h"
 #include "Configuration/Config.h"
 
-#include "AccountMgr.h"
-#include "Chat.h"
 #include "CliRunnable.h"
-#include "Language.h"
 #include "Log.h"
-#include "MapManager.h"
-#include "Player.h"
 #include "Util.h"
 
 #if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "Chat.h"
 
 char* command_finder(const char* text, int state)
 {
-    static int idx, len;
+    static size_t idx, len;
     const char* ret;
-    ChatCommand* cmd = ChatHandler::getCommandTable();
+    std::vector<ChatCommand> const& cmd = ChatHandler::getCommandTable();
 
     if (!state)
     {
@@ -51,20 +46,19 @@ char* command_finder(const char* text, int state)
         len = strlen(text);
     }
 
-    while ((ret = cmd[idx].Name))
+    while (idx < cmd.size())
     {
+        ret = cmd[idx].Name;
         if (!cmd[idx].AllowConsole)
         {
-            idx++;
+            ++idx;
             continue;
         }
 
-        idx++;
+        ++idx;
         //printf("Checking %s \n", cmd[idx].Name);
         if (strncmp(ret, text, len) == 0)
             return strdup(ret);
-        if (cmd[idx].Name == NULL)
-            break;
     }
 
     return ((char*)NULL);

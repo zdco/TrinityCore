@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -191,6 +191,12 @@ void InstanceScript::UpdateDoorState(GameObject* door)
     door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
 }
 
+BossInfo* InstanceScript::GetBossInfo(uint32 id)
+{
+    ASSERT(id < bosses.size());
+    return &bosses[id];
+}
+
 void InstanceScript::AddObject(Creature* obj, bool add)
 {
     ObjectInfoMap::const_iterator j = _creatureInfo.find(obj->GetEntry());
@@ -313,6 +319,11 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
     return false;
 }
 
+bool InstanceScript::_SkipCheckRequiredBosses(Player const* player /*= nullptr*/) const
+{
+    return player && player->GetSession()->HasPermission(rbac::RBAC_PERM_SKIP_CHECK_INSTANCE_REQUIRED_BOSSES);
+}
+
 void InstanceScript::Load(char const* data)
 {
     if (!data)
@@ -420,7 +431,26 @@ void InstanceScript::DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime /
             TC_LOG_ERROR("scripts", "InstanceScript: DoUseDoorOrButton can't use gameobject entry %u, because type is %u.", go->GetEntry(), go->GetGoType());
     }
     else
-        TC_LOG_DEBUG("scripts", "InstanceScript: HandleGameObject failed");
+        TC_LOG_DEBUG("scripts", "InstanceScript: DoUseDoorOrButton failed");
+}
+
+void InstanceScript::DoCloseDoorOrButton(ObjectGuid guid)
+{
+    if (!guid)
+        return;
+
+    if (GameObject* go = instance->GetGameObject(guid))
+    {
+        if (go->GetGoType() == GAMEOBJECT_TYPE_DOOR || go->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+        {
+            if (go->getLootState() == GO_ACTIVATED)
+                go->ResetDoorOrButton();
+        }
+        else
+            TC_LOG_ERROR("scripts", "InstanceScript: DoCloseDoorOrButton can't use gameobject entry %u, because type is %u.", go->GetEntry(), go->GetGoType());
+    }
+    else
+        TC_LOG_DEBUG("scripts", "InstanceScript: DoCloseDoorOrButton failed");
 }
 
 void InstanceScript::DoRespawnGameObject(ObjectGuid guid, uint32 timeToDespawn /*= MINUTE*/)
@@ -620,5 +650,27 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                         return;
                     }
         }
+    }
+}
+
+std::string InstanceScript::GetBossStateName(uint8 state)
+{
+    // See enum EncounterState in InstanceScript.h
+    switch (state)
+    {
+        case NOT_STARTED:
+            return "NOT_STARTED";
+        case IN_PROGRESS:
+            return "IN_PROGRESS";
+        case FAIL:
+            return "FAIL";
+        case DONE:
+            return "DONE";
+        case SPECIAL:
+            return "SPECIAL";
+        case TO_BE_DECIDED:
+            return "TO_BE_DECIDED";
+        default:
+            return "INVALID";
     }
 }

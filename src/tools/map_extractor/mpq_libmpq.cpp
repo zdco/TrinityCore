@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -71,7 +71,7 @@ MPQFile::MPQFile(const char* filename):
         uint32_t filenum;
         if(libmpq__file_number(mpq_a, filename, &filenum)) continue;
         libmpq__off_t transferred;
-        libmpq__file_unpacked_size(mpq_a, filenum, &size);
+        libmpq__file_size_unpacked(mpq_a, filenum, &size);
 
         // HACK: in patch.mpq some files don't want to open and give 1 for filesize
         if (size<=1) {

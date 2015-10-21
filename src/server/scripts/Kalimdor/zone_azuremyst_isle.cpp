@@ -1,5 +1,5 @@
  /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -230,7 +230,7 @@ public:
             Talk(ATTACK_YELL, who);
         }
 
-        void sGossipSelect(Player* player, uint32 /*sender*/, uint32 /*action*/) override
+        void sGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
         {
             player->CLOSE_GOSSIP_MENU();
             me->setFaction(FACTION_HOSTILE);
@@ -351,7 +351,7 @@ public:
             Talk(SAY_AGGRO, who);
         }
 
-        void sQuestAccept(Player* player, Quest const* quest)
+        void sQuestAccept(Player* player, Quest const* quest) override
         {
             if (quest->GetQuestId() == QUEST_A_CRY_FOR_SAY_HELP)
             {
@@ -465,13 +465,13 @@ public:
             SayTimer = 8000;
         }
 
-        uint32 NextStep(uint8 Step)
+        uint32 NextStep(uint8 step)
         {
             Creature* Spark = ObjectAccessor::GetCreature(*me, SparkGUID);
             if (!Spark)
                 return 99999999;
 
-            switch (Step)
+            switch (step)
             {
                 case 0:
                     Spark->GetMotionMaster()->MovePoint(0, -5080.70f, -11253.61f, 0.56f);

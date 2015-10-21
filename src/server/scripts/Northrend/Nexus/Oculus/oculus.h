@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,7 +29,9 @@ enum DataTypes
     DATA_DRAKOS                 = 0,
     DATA_VAROS                  = 1,
     DATA_UROM                   = 2,
-    DATA_EREGOS                 = 3
+    DATA_EREGOS                 = 3,
+    // GPS System
+    DATA_CONSTRUCTS             = 4
 };
 
 enum CreatureIds
@@ -77,6 +79,25 @@ enum OculusSpells
 {
     SPELL_CENTRIFUGE_SHIELD     = 50053,
     SPELL_DEATH_SPELL           = 50415
+};
+
+enum InstanceTexts
+{
+    SAY_EREGOS_INTRO_TEXT = 0,
+    SAY_VAROS_INTRO_TEXT  = 4
+};
+
+enum InstanceEvents
+{
+    EVENT_VAROS_INTRO = 1,
+    EVENT_EREGOS_INTRO
+};
+
+enum ConstructKillState
+{
+    KILL_NO_CONSTRUCT           = 0,
+    KILL_ONE_CONSTRUCT          = 1,
+    KILL_MORE_CONSTRUCT         = 2
 };
 
 enum Misc

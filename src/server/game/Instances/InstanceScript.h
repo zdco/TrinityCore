@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -174,11 +174,11 @@ class InstanceScript : public ZoneScript
 
         inline Creature* GetCreature(uint32 type)
         {
-            return ObjectAccessor::GetObjectInMap<Creature>(GetObjectGuid(type), instance, nullptr);
+            return instance->GetCreature(GetObjectGuid(type));
         }
         inline GameObject* GetGameObject(uint32 type)
         {
-            return ObjectAccessor::GetObjectInMap<GameObject>(GetObjectGuid(type), instance, nullptr);
+            return instance->GetGameObject(GetObjectGuid(type));
         }
 
         // Called when a player successfully enters the instance.
@@ -191,6 +191,7 @@ class InstanceScript : public ZoneScript
 
         // Change active state of doors or buttons
         void DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime = 0, bool useAlternativeState = false);
+        void DoCloseDoorOrButton(ObjectGuid guid);
 
         // Respawns a GO having negative spawntimesecs in gameobject-table
         void DoRespawnGameObject(ObjectGuid guid, uint32 timeToDespawn = MINUTE);
@@ -219,6 +220,7 @@ class InstanceScript : public ZoneScript
 
         virtual bool SetBossState(uint32 id, EncounterState state);
         EncounterState GetBossState(uint32 id) const { return id < bosses.size() ? bosses[id].state : TO_BE_DECIDED; }
+        static std::string GetBossStateName(uint8 state);
         BossBoundaryMap const* GetBossBoundary(uint32 id) const { return id < bosses.size() ? &bosses[id].boundary : NULL; }
 
         // Achievement criteria additional requirements check
@@ -254,11 +256,15 @@ class InstanceScript : public ZoneScript
         void AddObject(GameObject* obj, bool add);
         void AddObject(WorldObject* obj, uint32 type, bool add);
 
-        void AddDoor(GameObject* door, bool add);
+        virtual void AddDoor(GameObject* door, bool add);
         void AddMinion(Creature* minion, bool add);
 
-        void UpdateDoorState(GameObject* door);
+        virtual void UpdateDoorState(GameObject* door);
         void UpdateMinionState(Creature* minion, EncounterState state);
+
+        // Exposes private data that should never be modified unless exceptional cases.
+        // Pay very much attention at how the returned BossInfo data is modified to avoid issues.
+        BossInfo* GetBossInfo(uint32 id);
 
         // Instance Load and Save
         bool ReadSaveDataHeaders(std::istringstream& data);
@@ -267,6 +273,8 @@ class InstanceScript : public ZoneScript
         void WriteSaveDataHeaders(std::ostringstream& data);
         void WriteSaveDataBossStates(std::ostringstream& data);
         virtual void WriteSaveDataMore(std::ostringstream& /*data*/) { }
+
+        bool _SkipCheckRequiredBosses(Player const* player = nullptr) const;
 
     private:
         static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);

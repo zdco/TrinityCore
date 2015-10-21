@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -100,6 +100,7 @@ enum RBACPermissions
     RBAC_PERM_COMMANDS_PINFO_CHECK_PERSONAL_DATA             = 48,
     RBAC_PERM_EMAIL_CONFIRM_FOR_PASS_CHANGE                  = 49,
     RBAC_PERM_MAY_CHECK_OWN_EMAIL                            = 50,
+    RBAC_PERM_ALLOW_TWO_SIDE_TRADE                           = 51,
 
     // Free space for core permissions (till 149)
     // Roles (Permissions with delegated permissions) use 199 and descending
@@ -693,6 +694,8 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_INSTANCE_GET_BOSS_STATE                = 796,
     RBAC_PERM_COMMAND_PVPSTATS                               = 797,
     RBAC_PERM_COMMAND_MODIFY_XP                              = 798,
+    // 799 - 834 6.x only
+    RBAC_PERM_COMMAND_DEBUG_LOADCELLS                        = 835,
 
     // custom permissions 1000+
     RBAC_PERM_MAX
@@ -801,6 +804,7 @@ class RBACData
          * @return Success or failure (with reason) to grant the permission
          *
          * Example Usage:
+         * @code
          * // previously defined "RBACData* rbac" with proper initialization
          * uint32 permissionId = 2;
          * if (rbac->GrantRole(permissionId) == RBAC_IN_DENIED_LIST)
@@ -824,6 +828,7 @@ class RBACData
          * @return Success or failure (with reason) to deny the permission
          *
          * Example Usage:
+         * @code
          * // previously defined "RBACData* rbac" with proper initialization
          * uint32 permissionId = 2;
          * if (rbac->DenyRole(permissionId) == RBAC_ID_DOES_NOT_EXISTS)
@@ -848,6 +853,7 @@ class RBACData
          * @return Success or failure (with reason) to remove the permission
          *
          * Example Usage:
+         * @code
          * // previously defined "RBACData* rbac" with proper initialization
          * uint32 permissionId = 2;
          * if (rbac->RevokeRole(permissionId) == RBAC_OK)
@@ -885,7 +891,7 @@ class RBACData
          */
         void CalculateNewPermissions();
 
-        int32 GetRealmId() { return _realmId; }
+        int32 GetRealmId() const { return _realmId; }
 
         // Auxiliar private functions - defined to allow to maintain same code even
         // if internal structure changes.
@@ -938,9 +944,6 @@ class RBACData
          *
          * Given a list of permissions, gets all the inherited permissions
          * @param permissions The list of permissions to expand
-         *
-         * @return new list of permissions containing original permissions and
-         * all other pemissions that are linked to the original ones
          */
         void ExpandPermissions(RBACPermissionContainer& permissions);
 

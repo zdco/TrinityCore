@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -222,9 +222,9 @@ class InstanceSaveManager
         InstanceSave* GetInstanceSave(uint32 InstanceId);
 
         /* statistics */
-        uint32 GetNumInstanceSaves() { return m_instanceSaveById.size(); }
-        uint32 GetNumBoundPlayersTotal();
-        uint32 GetNumBoundGroupsTotal();
+        uint32 GetNumInstanceSaves() const { return uint32(m_instanceSaveById.size()); }
+        uint32 GetNumBoundPlayersTotal() const;
+        uint32 GetNumBoundGroupsTotal() const;
 
     protected:
         static uint16 ResetTimeDelay[];

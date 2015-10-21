@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -37,6 +37,7 @@
 #include "ElunaUtility.h"
 #endif
 #include "WorldSession.h"
+#include "Chat.h"
 
 // namespace
 // {
@@ -112,7 +113,7 @@ class ScriptRegistry
                         TC_LOG_ERROR("scripts", "Script '%s' already assigned with the same script name, so the script can't work.",
                             script->GetName().c_str());
 
-                        ASSERT(false); // Error that should be fixed ASAP.
+                        ABORT(); // Error that should be fixed ASAP.
                     }
                 }
                 else
@@ -186,9 +187,8 @@ struct TSpellSummary
     uint8 Effects;                                          // set of enum SelectEffect
 } *SpellSummary;
 
-ScriptMgr::ScriptMgr() : _scriptCount(0)
+ScriptMgr::ScriptMgr() : _scriptCount(0), _scheduledScripts(0)
 {
-    _scheduledScripts = 0;
 }
 
 ScriptMgr::~ScriptMgr() { }
@@ -1116,7 +1116,7 @@ bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
 Battleground* ScriptMgr::CreateBattleground(BattlegroundTypeId /*typeId*/)
 {
     /// @todo Implement script-side battlegrounds.
-    ASSERT(false);
+    ABORT();
     return NULL;
 }
 
@@ -1128,12 +1128,15 @@ OutdoorPvP* ScriptMgr::CreateOutdoorPvP(OutdoorPvPData const* data)
     return tmpscript->GetOutdoorPvP();
 }
 
-std::vector<ChatCommand*> ScriptMgr::GetChatCommands()
+std::vector<ChatCommand> ScriptMgr::GetChatCommands()
 {
-    std::vector<ChatCommand*> table;
+    std::vector<ChatCommand> table;
 
     FOR_SCRIPTS_RET(CommandScript, itr, end, table)
-        table.push_back(itr->second->GetCommands());
+    {
+        std::vector<ChatCommand> cmds = itr->second->GetCommands();
+        table.insert(table.end(), cmds.begin(), cmds.end());
+    }
 
     return table;
 }
@@ -1677,7 +1680,7 @@ void ScriptMgr::OnGuildItemMove(Guild* guild, Player* player, Item* pItem, bool 
     FOREACH_SCRIPT(GuildScript)->OnItemMove(guild, player, pItem, isSrcBank, srcContainer, srcSlotId, isDestBank, destContainer, destSlotId);
 }
 
-void ScriptMgr::OnGuildEvent(Guild* guild, uint8 eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank)
+void ScriptMgr::OnGuildEvent(Guild* guild, uint8 eventType, ObjectGuid::LowType playerGuid1, ObjectGuid::LowType playerGuid2, uint8 newRank)
 {
 #ifdef ELUNA
     sEluna->OnEvent(guild, eventType, playerGuid1, playerGuid2, newRank);
@@ -1685,7 +1688,7 @@ void ScriptMgr::OnGuildEvent(Guild* guild, uint8 eventType, uint32 playerGuid1, 
     FOREACH_SCRIPT(GuildScript)->OnEvent(guild, eventType, playerGuid1, playerGuid2, newRank);
 }
 
-void ScriptMgr::OnGuildBankEvent(Guild* guild, uint8 eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId)
+void ScriptMgr::OnGuildBankEvent(Guild* guild, uint8 eventType, uint8 tabId, ObjectGuid::LowType playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId)
 {
 #ifdef ELUNA
     sEluna->OnBankEvent(guild, eventType, tabId, playerGuid, itemOrMoney, itemStackCount, destTabId);

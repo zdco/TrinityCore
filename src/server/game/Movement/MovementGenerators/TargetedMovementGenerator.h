@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -73,7 +73,7 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
             : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target, offset, angle) { }
         ~ChaseMovementGenerator() { }
 
-        MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return CHASE_MOTION_TYPE; }
 
         void DoInitialize(T*);
         void DoFinalize(T*);
@@ -97,7 +97,7 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) { }
         ~FollowMovementGenerator() { }
 
-        MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return FOLLOW_MOTION_TYPE; }
 
         void DoInitialize(T*);
         void DoFinalize(T*);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -75,11 +75,6 @@ typedef std::unordered_map<uint32, CreatureTextHolder> CreatureTextMap;     // a
 
 typedef std::map<CreatureTextId, CreatureTextLocale> LocaleCreatureTextMap;
 
-//used for handling non-repeatable random texts
-typedef std::vector<uint8> CreatureTextRepeatIds;
-typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
-typedef std::unordered_map<ObjectGuid, CreatureTextRepeatGroup> CreatureTextRepeatMap;//guid based
-
 class CreatureTextMgr
 {
     private:
@@ -115,7 +110,6 @@ class CreatureTextMgr
         float GetRangeForChatType(ChatMsg msgType) const;
 
         CreatureTextMap mTextMap;
-        CreatureTextRepeatMap mTextRepeatMap;
         LocaleCreatureTextMap mLocaleTextMap;
 };
 

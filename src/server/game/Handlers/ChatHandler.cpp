@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -34,7 +34,6 @@
 #include "Log.h"
 #include "Opcodes.h"
 #include "Player.h"
-#include "SpellAuras.h"
 #include "SpellAuraEffects.h"
 #include "Util.h"
 #include "ScriptMgr.h"
@@ -119,7 +118,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 break;
             default:
                 TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid language/message type combination",
-                                                     GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+                                                     GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
 
                 recvData.rfinish();
                 return;
@@ -230,7 +229,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) && !ChatHandler(this).isValidChatMessage(msg.c_str()))
             {
                 TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName().c_str(),
-                    GetPlayer()->GetGUIDLow(), msg.c_str());
+                    GetPlayer()->GetGUID().GetCounter(), msg.c_str());
 
                 if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
                     KickPlayer();

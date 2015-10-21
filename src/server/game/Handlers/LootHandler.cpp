@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,9 +25,7 @@
 #include "LootMgr.h"
 #include "ObjectAccessor.h"
 #include "Object.h"
-#include "Opcodes.h"
 #include "Player.h"
-#include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #ifdef ELUNA
@@ -115,7 +113,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 
     switch (guid.GetHigh())
     {
-        case HIGHGUID_GAMEOBJECT:
+        case HighGuid::GameObject:
         {
             GameObject* go = GetPlayer()->GetMap()->GetGameObject(guid);
 
@@ -125,7 +123,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 
             break;
         }
-        case HIGHGUID_CORPSE:                               // remove insignia ONLY in BG
+        case HighGuid::Corpse:                               // remove insignia ONLY in BG
         {
             Corpse* bones = ObjectAccessor::GetCorpse(*player, guid);
 
@@ -137,7 +135,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 
             break;
         }
-        case HIGHGUID_ITEM:
+        case HighGuid::Item:
         {
             if (Item* item = player->GetItemByGuid(guid))
             {
@@ -146,8 +144,8 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             }
             break;
         }
-        case HIGHGUID_UNIT:
-        case HIGHGUID_VEHICLE:
+        case HighGuid::Unit:
+        case HighGuid::Vehicle:
         {
             Creature* creature = player->GetMap()->GetCreature(guid);
             bool lootAllowed = creature && creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->loot.loot_type == LOOT_PICKPOCKETING);
@@ -179,7 +177,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                 if (!member)
                     continue;
 
-                if (player->IsWithinDistInMap(member, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                if (player->IsAtGroupRewardDistance(member))
                     playersNear.push_back(member);
             }
 

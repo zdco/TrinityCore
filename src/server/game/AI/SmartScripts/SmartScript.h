@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -118,7 +118,7 @@ class SmartScript
                 smart = false;
 
             if (!smart)
-                TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action called by Creature (GUID: %u Entry: %u) skipped to prevent crash.", c ? c->GetDBTableGUIDLow() : 0, c ? c->GetEntry() : 0, me ? me->GetDBTableGUIDLow() : 0, me ? me->GetEntry() : 0);
+                TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action called by Creature (GUID: %u Entry: %u) skipped to prevent crash.", c ? c->GetSpawnId() : 0, c ? c->GetEntry() : 0, me ? me->GetSpawnId() : 0, me ? me->GetEntry() : 0);
 
             return smart;
         }
@@ -132,7 +132,7 @@ class SmartScript
             if (!go || go->GetAIName() != "SmartGameObjectAI")
                 smart = false;
             if (!smart)
-                TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: %u Entry: %u) skipped to prevent crash.", g ? g->GetDBTableGUIDLow() : 0, g ? g->GetEntry() : 0, go ? go->GetDBTableGUIDLow() : 0, go ? go->GetEntry() : 0);
+                TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: %u Entry: %u) skipped to prevent crash.", g ? g->GetSpawnId() : 0, g ? g->GetEntry() : 0, go ? go->GetSpawnId() : 0, go ? go->GetEntry() : 0);
 
             return smart;
         }
@@ -145,35 +145,57 @@ class SmartScript
             return NULL;
         }
 
-        GameObject* FindGameObjectNear(WorldObject* searchObject, uint32 guid) const
+        void StoreCounter(uint32 id, uint32 value, uint32 reset)
         {
-            GameObject* gameObject = NULL;
+            CounterMap::const_iterator itr = mCounterList.find(id);
+            if (itr != mCounterList.end())
+            {
+                if (reset == 0)
+                    value += GetCounterValue(id);
+                mCounterList.erase(id);
+            }
 
-            CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
-            Cell cell(p);
-
-            Trinity::GameObjectWithDbGUIDCheck goCheck(*searchObject, guid);
-            Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(searchObject, gameObject, goCheck);
-
-            TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > objectChecker(checker);
-            cell.Visit(p, objectChecker, *searchObject->GetMap(), *searchObject, searchObject->GetGridActivationRange());
-
-            return gameObject;
+            mCounterList.insert(std::make_pair(id, value));
+            ProcessEventsFor(SMART_EVENT_COUNTER_SET);
         }
 
-        Creature* FindCreatureNear(WorldObject* searchObject, uint32 guid) const
+        uint32 GetCounterId(uint32 id)
         {
-            Creature* creature = NULL;
-            CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
-            Cell cell(p);
+            CounterMap::iterator itr = mCounterList.find(id);
+            if (itr != mCounterList.end())
+                return itr->first;
+            return 0;
+        }
 
-            Trinity::CreatureWithDbGUIDCheck target_check(searchObject, guid);
-            Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(searchObject, creature, target_check);
+        uint32 GetCounterValue(uint32 id)
+        {
+            CounterMap::iterator itr = mCounterList.find(id);
+            if (itr != mCounterList.end())
+                return itr->second;
+            return 0;
+        }
 
-            TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-            cell.Visit(p, unit_checker, *searchObject->GetMap(), *searchObject, searchObject->GetGridActivationRange());
+        GameObject* FindGameObjectNear(WorldObject* searchObject, ObjectGuid::LowType guid) const
+        {
+            auto bounds = searchObject->GetMap()->GetGameObjectBySpawnIdStore().equal_range(guid);
+            if (bounds.first == bounds.second)
+                return nullptr;
 
-            return creature;
+            return bounds.first->second;
+        }
+
+        Creature* FindCreatureNear(WorldObject* searchObject, ObjectGuid::LowType guid) const
+        {
+            auto bounds = searchObject->GetMap()->GetCreatureBySpawnIdStore().equal_range(guid);
+            if (bounds.first == bounds.second)
+                return nullptr;
+
+            auto creatureItr = std::find_if(bounds.first, bounds.second, [](Map::CreatureBySpawnIdContainer::value_type const& pair)
+            {
+                return pair.second->IsAlive();
+            });
+
+            return creatureItr != bounds.second ? creatureItr->second : bounds.first->second;
         }
 
         ObjectListMap* mTargetStorage;
@@ -181,20 +203,27 @@ class SmartScript
         void OnReset();
         void ResetBaseObject()
         {
-            if (meOrigGUID)
+            WorldObject* lookupRoot = me;
+            if (!lookupRoot)
+                lookupRoot = go;
+
+            if (lookupRoot)
             {
-                if (Creature* m = HashMapHolder<Creature>::Find(meOrigGUID))
+                if (!meOrigGUID)
                 {
-                    me = m;
-                    go = NULL;
+                    if (Creature* m = ObjectAccessor::GetCreature(*lookupRoot, meOrigGUID))
+                    {
+                        me = m;
+                        go = NULL;
+                    }
                 }
-            }
-            if (goOrigGUID)
-            {
-                if (GameObject* o = HashMapHolder<GameObject>::Find(goOrigGUID))
+                if (!goOrigGUID)
                 {
-                    me = NULL;
-                    go = o;
+                    if (GameObject* o = ObjectAccessor::GetGameObject(*lookupRoot, goOrigGUID))
+                    {
+                        me = NULL;
+                        go = o;
+                    }
                 }
             }
             goOrigGUID.Clear();
@@ -205,6 +234,8 @@ class SmartScript
         void SetScript9(SmartScriptHolder& e, uint32 entry);
         Unit* GetLastInvoker();
         ObjectGuid mLastInvoker;
+        typedef std::unordered_map<uint32, uint32> CounterMap;
+        CounterMap mCounterList;
 
     private:
         void IncPhase(int32 p = 1)
@@ -215,7 +246,14 @@ class SmartScript
                 DecPhase(abs(p));
         }
 
-        void DecPhase(int32 p = 1) { mEventPhase  -= (mEventPhase < (uint32)p ? (uint32)p - mEventPhase : (uint32)p); }
+        void DecPhase(int32 p = 1) 
+        { 
+            if(mEventPhase > (uint32)p)
+                mEventPhase -= (uint32)p; 
+            else
+                mEventPhase = 0;
+        }
+
         bool IsInPhase(uint32 p) const { return ((1 << (mEventPhase - 1)) & p) != 0; }
         void SetPhase(uint32 p = 0) { mEventPhase = p; }
 
