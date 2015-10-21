@@ -39,9 +39,7 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type
     lootRecipient = NULL;
 }
 
-Corpse::~Corpse()
-{
-}
+Corpse::~Corpse() { }
 
 void Corpse::AddToWorld()
 {

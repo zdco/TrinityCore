@@ -210,7 +210,6 @@ class Item : public Object
         Item* CloneItem(uint32 count, Player const* player = NULL) const;
 
         Item();
-        ~Item();
 
         virtual bool Create(ObjectGuid::LowType guidlow, ObjectGuid::LowType itemid, Player const* owner);
 

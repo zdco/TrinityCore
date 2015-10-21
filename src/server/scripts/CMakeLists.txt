@@ -45,9 +45,9 @@ message("")
 include_directories(
   ${CMAKE_SOURCE_DIR}/dep/cppformat
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-  ${CMAKE_SOURCE_DIR}/src/LuaEngine
-  ${CMAKE_SOURCE_DIR}/dep/lualib
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+  ${CMAKE_SOURCE_DIR}/dep/lualib
+  ${CMAKE_SOURCE_DIR}/src/LuaEngine
   ${CMAKE_SOURCE_DIR}/src/common/
   ${CMAKE_SOURCE_DIR}/src/common/Collision
   ${CMAKE_SOURCE_DIR}/src/common/Collision/Management

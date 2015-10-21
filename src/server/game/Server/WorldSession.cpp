@@ -229,6 +229,7 @@ void WorldSession::SendPacket(WorldPacket* packet)
 #endif                                                      // !TRINITY_DEBUG
 
     sScriptMgr->OnPacketSend(this, *packet);
+
 #ifdef ELUNA
     if (!sEluna->OnPacketSend(this, *packet))
         return;

@@ -180,6 +180,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
   ${CMAKE_SOURCE_DIR}/dep/zlib
+  ${CMAKE_SOURCE_DIR}/dep/lualib
+  ${CMAKE_SOURCE_DIR}/src/LuaEngine
   ${CMAKE_SOURCE_DIR}/src/common
   ${CMAKE_SOURCE_DIR}/src/common/Collision
   ${CMAKE_SOURCE_DIR}/src/common/Collision/Management
@@ -214,7 +216,10 @@ add_library(game STATIC
   ${LuaEngine_STAT_SRCS}
 )
 
+<<<<<<< HEAD
 add_dependencies(game revision.h)
+=======
+>>>>>>> 94e8af31a8a74e9f721d02624ac29bd74ff9eba6
 add_dependencies(game lualib)
 
 if (ELUNA)

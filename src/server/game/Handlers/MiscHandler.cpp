@@ -72,6 +72,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket& recvData)
             GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
         GetPlayer()->KillPlayer();
     }
+
 #ifdef ELUNA
     sEluna->OnRepop(GetPlayer());
 #endif
@@ -180,12 +181,10 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         else if (item)
         {
             sEluna->HandleGossipSelectOption(GetPlayer(), item, GetPlayer()->PlayerTalkClass->GetGossipOptionSender(gossipListId), GetPlayer()->PlayerTalkClass->GetGossipOptionAction(gossipListId), code);
-            return;
         }
         else if (_player->GetGUID() == guid && menuId == _player->PlayerTalkClass->GetGossipMenu().GetMenuId())
         {
             sEluna->HandleGossipSelectOption(GetPlayer(), menuId, GetPlayer()->PlayerTalkClass->GetGossipOptionSender(gossipListId), GetPlayer()->PlayerTalkClass->GetGossipOptionAction(gossipListId), code);
-            return;
         }
 #endif
         else
@@ -207,12 +206,10 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         else if (_player->GetGUID() == guid && menuId == _player->PlayerTalkClass->GetGossipMenu().GetMenuId())
         {
             sEluna->HandleGossipSelectOption(GetPlayer(), menuId, GetPlayer()->PlayerTalkClass->GetGossipOptionSender(gossipListId), GetPlayer()->PlayerTalkClass->GetGossipOptionAction(gossipListId), code);
-            return;
         }
         else if (item)
         {
             sEluna->HandleGossipSelectOption(GetPlayer(), item, GetPlayer()->PlayerTalkClass->GetGossipOptionSender(gossipListId), GetPlayer()->PlayerTalkClass->GetGossipOptionAction(gossipListId), code);
-            return;
         }
 #endif
         else

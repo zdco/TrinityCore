@@ -907,7 +907,6 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, creature);
@@ -950,6 +949,8 @@ bool ScriptMgr::OnGossipHello(Player* player, GameObject* go)
     ASSERT(go);
 #ifdef ELUNA
     if (sEluna->OnGossipHello(player, go))
+        return true;
+    if (sEluna->OnGameObjectUse(player, go))
         return true;
 #endif
 
@@ -1145,7 +1146,7 @@ void ScriptMgr::OnWeatherChange(Weather* weather, WeatherState state, float grad
 {
     ASSERT(weather);
 #ifdef ELUNA
-    sEluna->OnChange(weather, state, grade);
+    sEluna->OnChange(weather, weather->GetZone(), state, grade);
 #endif
 
     GET_SCRIPT(WeatherScript, weather->GetScriptId(), tmpscript);
@@ -1165,7 +1166,7 @@ void ScriptMgr::OnAuctionAdd(AuctionHouseObject* ah, AuctionEntry* entry)
     ASSERT(ah);
     ASSERT(entry);
 #ifdef ELUNA
-    sEluna->OnAdd(ah);
+    sEluna->OnAdd(ah, entry);
 #endif
 
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionAdd(ah, entry);
@@ -1176,7 +1177,7 @@ void ScriptMgr::OnAuctionRemove(AuctionHouseObject* ah, AuctionEntry* entry)
     ASSERT(ah);
     ASSERT(entry);
 #ifdef ELUNA
-    sEluna->OnRemove(ah);
+    sEluna->OnRemove(ah, entry);
 #endif
 
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionRemove(ah, entry);
@@ -1187,7 +1188,7 @@ void ScriptMgr::OnAuctionSuccessful(AuctionHouseObject* ah, AuctionEntry* entry)
     ASSERT(ah);
     ASSERT(entry);
 #ifdef ELUNA
-    sEluna->OnSuccessful(ah);
+    sEluna->OnSuccessful(ah, entry);
 #endif
 
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionSuccessful(ah, entry);
@@ -1198,7 +1199,7 @@ void ScriptMgr::OnAuctionExpire(AuctionHouseObject* ah, AuctionEntry* entry)
     ASSERT(ah);
     ASSERT(entry);
 #ifdef ELUNA
-    sEluna->OnExpire(ah);
+    sEluna->OnExpire(ah, entry);
 #endif
 
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionExpire(ah, entry);
@@ -1512,6 +1513,8 @@ void ScriptMgr::OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck)
 void ScriptMgr::OnPlayerLogin(Player* player, bool firstLogin)
 {
 #ifdef ELUNA
+    if (firstLogin)
+        sEluna->OnFirstLogin(player);
     sEluna->OnLogin(player);
 #endif
     FOREACH_SCRIPT(PlayerScript)->OnLogin(player, firstLogin);

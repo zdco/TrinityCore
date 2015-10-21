@@ -35,7 +35,6 @@
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif
-#include <G3D/Quat.h>
 
 GameObject::GameObject() : WorldObject(false), MapObject(),
     m_model(NULL), m_goValue(), m_AI(NULL)
@@ -101,9 +100,7 @@ void GameObject::CleanupsBeforeDelete(bool finalCleanup)
     WorldObject::CleanupsBeforeDelete(finalCleanup);
 
     if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
-    {
         RemoveFromOwner();
-    }
 }
 
 void GameObject::RemoveFromOwner()
@@ -130,9 +127,6 @@ void GameObject::AddToWorld()
     ///- Register the gameobject for guid lookup
     if (!IsInWorld())
     {
-#ifdef ELUNA
-        sEluna->OnAddToWorld(this);
-#endif
         if (m_zoneScript)
             m_zoneScript->OnGameObjectCreate(this);
 
@@ -152,6 +146,10 @@ void GameObject::AddToWorld()
 
         EnableCollision(toggledState);
         WorldObject::AddToWorld();
+
+#ifdef ELUNA
+        sEluna->OnAddToWorld(this);
+#endif
     }
 }
 

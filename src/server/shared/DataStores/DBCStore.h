@@ -75,7 +75,11 @@ class DBCStorage
     typedef std::list<char*> StringPoolList;
     public:
         explicit DBCStorage(char const* f)
+#ifdef ELUNA
+            : fmt(f), nCount(0), fieldCount(0), dataTable(NULL), maxdatacount(0), mindatacount(std::numeric_limits<uint32>::max())
+#else
             : fmt(f), nCount(0), fieldCount(0), dataTable(NULL)
+#endif
         {
             indexTable.asT = NULL;
         }
@@ -85,9 +89,9 @@ class DBCStorage
         T const* LookupEntry(uint32 id) const
         {
 #ifdef ELUNA
-            if (loaded)
+            if (id <= maxdatacount && id >= mindatacount)
             {
-                typename std::map<uint32, T const*>::const_iterator it = data.find(id);
+                typename std::unordered_map<uint32, T const*>::const_iterator it = data.find(id);
                 if (it != data.end())
                     return it->second;
             }
@@ -105,23 +109,15 @@ class DBCStorage
 #ifdef ELUNA
         void SetEntry(uint32 id, T* t)
         {
-            if (!loaded)
-            {
-                for (uint32 i = 0; i < GetNumRows(); ++i)
-                {
-                    T const* node = LookupEntry(i);
-                    if (!node)
-                        continue;
-                    data[i] = node;
-                }
-                loaded = true;
-            }
+            delete data[id];
             data[id] = t;
+            maxdatacount = std::max(maxdatacount, id);
+            mindatacount = std::min(mindatacount, id);
         }
 #endif
 
 #ifdef ELUNA
-        uint32  GetNumRows() const {return loaded ? data.size() : nCount; }
+        uint32  GetNumRows() const { return std::max(maxdatacount + 1, nCount); }
 #else
         uint32  GetNumRows() const { return nCount; }
 #endif
@@ -302,11 +298,9 @@ class DBCStorage
         void Clear()
         {
 #ifdef ELUNA
-            if (loaded)
-            {
-                data.clear();
-                loaded = false;
-            }
+            data.clear();
+            maxdatacount = 0;
+            mindatacount = std::numeric_limits<uint32>::max();
 #endif
 
             if (!indexTable.asT)
@@ -342,8 +336,9 @@ class DBCStorage
         StringPoolList stringPoolList;
 
 #ifdef ELUNA
-        std::map<uint32, T const*> data;
-        bool loaded;
+        uint32 maxdatacount;
+        uint32 mindatacount;
+        std::unordered_map<uint32, T const*> data;
 #endif
 
         DBCStorage(DBCStorage const& right) = delete;
