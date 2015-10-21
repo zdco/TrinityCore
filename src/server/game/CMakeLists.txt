@@ -216,10 +216,7 @@ add_library(game STATIC
   ${LuaEngine_STAT_SRCS}
 )
 
-<<<<<<< HEAD
 add_dependencies(game revision.h)
-=======
->>>>>>> 94e8af31a8a74e9f721d02624ac29bd74ff9eba6
 add_dependencies(game lualib)
 
 if (ELUNA)
