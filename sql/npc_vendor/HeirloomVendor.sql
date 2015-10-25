@@ -1,7 +1,7 @@
 SET
 @ENTRY          := 99001,
 @NAME           := "走刀口新手商人",
-@SUBNAME        := "<传家宝出售者>",
+@SUBNAME        := "<传家宝出售者>";
 
 -- Deleting code
 
@@ -16,22 +16,21 @@ INSERT INTO `creature_template`
 `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, 
 `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, 
 `dmgschool`, `baseattacktime`, 
-`rangeattacktime`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, 
+`rangeattacktime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, 
 `trainer_spell`, `trainer_class`, `trainer_race`,
 `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, 
 `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, 
 `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, 
 `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, 
-`InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `RacialLeader`, `questItem1`, 
-`questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, 
+`InhabitType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `DamageModifier`, `ExperienceModifier`, `RacialLeader`, `movementId`, 
 `RegenHealth`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`)
 VALUES 
 (@ENTRY, '0', '0', '0', '0', '0', '17072', '0', '0', '0', @NAME, @SUBNAME, 
 '', '0', '80', '80', '0', '35', '129', '0.72', '0.72', '0.6', '3', 
-'0', '1800', '1800', '1', '0', '2048', '0', '0', '0', '0', '0', '0', 
+'0', '1800', '1800', '1', '1', '1', '0', '2048', '0', '0', '0', '0', '0', '0', 
 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', 
 '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '100', '100', '1', 
-'0', '0', '0', '0', '0', '0', '0', '0', '1', '0', '0', '', '0');
+'0', '1', '1', '0', '1', '0', '0', '', '0');
 
 INSERT INTO `npc_vendor` VALUES (@ENTRY, '0', '32824', '0', '0', '0', '0');
 INSERT INTO `npc_vendor` VALUES (@ENTRY, '0', '42943', '0', '0', '0', '0');
