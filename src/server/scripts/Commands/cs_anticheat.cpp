@@ -23,23 +23,23 @@ class anticheat_commandscript : public CommandScript
 public:
     anticheat_commandscript() : CommandScript("anticheat_commandscript") { }
 
-    ChatCommand* GetCommands() const
+    std::vector<ChatCommand> GetCommands() const override
     {
-        static ChatCommand anticheatCommandTable[] =
+        static std::vector<ChatCommand> anticheatCommandTable =
         {
-            { "global",         SEC_GAMEMASTER,     true,  &HandleAntiCheatGlobalCommand,         "", NULL },
-            { "player",         SEC_GAMEMASTER,     true,  &HandleAntiCheatPlayerCommand,         "", NULL },
-            { "delete",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatDeleteCommand,         "", NULL },
-            { "handle",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatHandleCommand,         "", NULL },
-            { "jail",           SEC_GAMEMASTER,     true,  &HandleAnticheatJailCommand,         "", NULL },
-            { "warn",           SEC_GAMEMASTER,     true,  &HandleAnticheatWarnCommand,         "", NULL },
-            { NULL,             0,                     false, NULL,                                           "", NULL }
+            { "global",         SEC_GAMEMASTER,     true,  &HandleAntiCheatGlobalCommand,         "" },
+            { "player",         SEC_GAMEMASTER,     true,  &HandleAntiCheatPlayerCommand,         "" },
+            { "delete",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatDeleteCommand,         "" },
+            { "handle",         SEC_ADMINISTRATOR,  true,  &HandleAntiCheatHandleCommand,         "" },
+            { "jail",           SEC_GAMEMASTER,     true,  &HandleAnticheatJailCommand,         "" },
+            { "warn",           SEC_GAMEMASTER,     true,  &HandleAnticheatWarnCommand,         "" },
+//            { NULL,             0,                     false, NULL,                                           "", NULL }
         };
 
-        static ChatCommand commandTable[] =
+        static std::vector<ChatCommand> commandTable =
         {
             { "anticheat",      SEC_GAMEMASTER,     true, NULL,                     "",  anticheatCommandTable},
-            { NULL,             0,                  false, NULL,                               "", NULL }
+//            { NULL,             0,                  false, NULL,                               "", NULL }
         };
 
         return commandTable;
@@ -61,7 +61,7 @@ public:
             strCommand = command;
             normalizePlayerName(strCommand);
 
-            pTarget = sObjectAccessor->FindPlayerByName(strCommand.c_str()); //get player by name
+            pTarget = ObjectAccessor::FindPlayerByName(strCommand.c_str()); // get player by name
         }else
             pTarget = handler->getSelectedPlayer();
 
@@ -100,7 +100,7 @@ public:
             strCommand = command;
             normalizePlayerName(strCommand);
 
-            pTarget = sObjectAccessor->FindPlayerByName(strCommand.c_str()); //get player by name
+            pTarget = ObjectAccessor::FindPlayerByName(strCommand.c_str()); // get player by name
         }else
             pTarget = handler->getSelectedPlayer();
 
@@ -118,16 +118,16 @@ public:
         pTarget->TeleportTo(1,16226.5f,16403.6f,-64.5f,3.2f);
         handler->GetSession()->GetPlayer()->TeleportTo(1,16226.5f,16403.6f,-64.5f,3.2f);
 
-        WorldLocation loc;
+
 
         // the player should be already there, but no :(
         // pTarget->GetPosition(&loc);
 
-        loc.m_mapId = 1;
-        loc.m_positionX = 16226.5f;
-        loc.m_positionY = 16403.6f;
-        loc.m_positionZ = -64.5f;
-        loc.m_orientation = 3.2f;
+        WorldLocation loc;
+        loc = WorldLocation(1, 16226.5f, 16403.6f, -64.5f, 3.2f);
+        pTarget->SetHomebind(loc, 876);
+
+
 
         pTarget->SetHomebind(loc,876);
         return true;
@@ -140,7 +140,7 @@ public:
 
         std::string strCommand;
 
-        char* command = strtok((char*)args, " "); //get entered name
+        char* command = strtok((char*)args, " "); // get entered name
 
         if (!command)
             return true;
@@ -152,11 +152,11 @@ public:
         else
         {
             normalizePlayerName(strCommand);
-            Player* player = sObjectAccessor->FindPlayerByName(strCommand.c_str()); //get player by name
+            Player* player = ObjectAccessor::FindPlayerByName(strCommand.c_str()); // get player by name
             if (!player)
                 handler->PSendSysMessage("Player doesn't exist");
             else
-                sAnticheatMgr->AnticheatDeleteCommand(player->GetGUIDLow());
+                sAnticheatMgr->AnticheatDeleteCommand(player->GetGUID().GetCounter());
         }
 
         return true;
@@ -179,15 +179,15 @@ public:
             strCommand = command;
 
             normalizePlayerName(strCommand);
-            player = sObjectAccessor->FindPlayerByName(strCommand.c_str()); //get player by name
+            player = ObjectAccessor::FindPlayerByName(strCommand.c_str()); // get player by name
 
             if (player)
-                guid = player->GetGUIDLow();
+                guid = player->GetGUID().GetCounter();
         }else
         {
             player = handler->getSelectedPlayer();
             if (player)
-                guid = player->GetGUIDLow();
+                guid = player->GetGUID().GetCounter();
         }
 
         if (!guid)

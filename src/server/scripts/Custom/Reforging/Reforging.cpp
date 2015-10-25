@@ -596,7 +596,7 @@ public:
                         if (Item* invItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                             if (player->reforgeMap.find(invItem->GetGUID().GetCounter()) != player->reforgeMap.end())
                                 if (const char* slotname = GetSlotName(slot, player->GetSession()))
-                                    player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, slotname, invItem->GetGUID().GetCounter(), Melt(RESTORE, 0), "Remove reforge from\n\n" + invItem->GetTemplate()->Name1, 0, false);
+                                    player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, slotname, invItem->GetGUID().GetCounter(), Melt(RESTORE, 0), "取消重铸\n\n" + invItem->GetTemplate()->Name1, 0, false);
                     }
                 }
                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "更新菜单", sender, melt);
@@ -632,12 +632,12 @@ public:
                         }
                         else
                         {
-                            player->GetSession()->SendNotification("Not enough money");
+                            player->GetSession()->SendNotification("金币不足");
                         }
                     }
                     else
                     {
-                        player->GetSession()->SendNotification("Invalid item selected");
+                        player->GetSession()->SendNotification("选择了无效的项目");
                     }
                 }
                 OnGossipHello(player, creature);

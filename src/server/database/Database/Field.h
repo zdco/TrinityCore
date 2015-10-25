@@ -277,9 +277,6 @@ class Field
         };
 
     protected:
-        Field();
-        ~Field();
-
         #pragma pack(push, 1)
         struct
         {
