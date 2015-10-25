@@ -17,6 +17,7 @@
 
 #include "ScriptLoader.h"
 #include "World.h"
+#include "AnticheatMgr.h"
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -40,6 +41,7 @@ void AddSC_SmartScripts();
 void AddSC_account_commandscript();
 void AddSC_achievement_commandscript();
 void AddSC_ahbot_commandscript();
+void AddSC_anticheat_commandscript();
 void AddSC_arena_commandscript();
 void AddSC_ban_commandscript();
 void AddSC_bf_commandscript();
@@ -695,6 +697,7 @@ void AddScripts()
     AddSpellScripts();
     AddSC_SmartScripts();
     AddCommandScripts();
+    sAnticheatMgr->StartScripts();
 #ifdef SCRIPTS
     AddWorldScripts();
     AddEasternKingdomsScripts();
@@ -729,6 +732,7 @@ void AddSpellScripts()
 
 void AddCommandScripts()
 {
+    AddSC_anticheat_commandscript();
     AddSC_account_commandscript();
     AddSC_achievement_commandscript();
     AddSC_ahbot_commandscript();
@@ -1416,6 +1420,46 @@ void AddBattlegroundScripts()
 #ifdef SCRIPTS
 /* This is where custom scripts' loading functions should be declared. */
 
+// 1
+// 2
+// 3
+// 4
+// 5
+// 6
+// 7
+// 8
+// 9
+// 10
+// 11
+// 12
+// 13
+// 14
+// 15
+// 16
+// 17
+// 18
+// 19
+// 20
+// 21
+// 22
+// 23
+// 24
+// 25
+// 26
+// 27
+// 28
+// 29
+// 30
+// 31
+// 32
+// 33
+// 34
+// 35
+// 36
+// 37
+// 38
+// 39
+// 40
 void AddSC_PWS_Transmogrification();
 void AddSC_CS_Transmogrification();
 void AddSC_REFORGER_NPC();
@@ -1426,6 +1470,46 @@ void AddCustomScripts()
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
 
+    // 1
+	// 2
+	// 3
+	// 4
+	// 5
+	// 6
+	// 7
+	// 8
+	// 9
+	// 10
+	// 11
+	// 12
+	// 13
+	// 14
+	// 15
+	// 16
+	// 17
+	// 18
+	// 19
+	// 20
+	// 21
+	// 22
+	// 23
+	// 24
+	// 25
+	// 26
+	// 27
+	// 28
+	// 29
+	// 30
+	// 31
+	// 32
+	// 33
+	// 34
+	// 35
+	// 36
+	// 37
+	// 38
+	// 39
+	// 40
     AddSC_PWS_Transmogrification();
     AddSC_CS_Transmogrification();
     AddSC_REFORGER_NPC();
