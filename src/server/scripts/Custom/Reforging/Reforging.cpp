@@ -47,13 +47,13 @@ static const char* GetStatName(uint32 ItemStatType)
 {
     switch(ItemStatType)
     {
-    case ITEM_MOD_SPIRIT                   	: return "Spirit"; break;
-    case ITEM_MOD_DODGE_RATING             	: return "Dodge rating"; break;
-    case ITEM_MOD_PARRY_RATING             	: return "Parry rating"; break;
-    case ITEM_MOD_HIT_RATING               	: return "Hit rating"; break;
-    case ITEM_MOD_CRIT_RATING              	: return "Crit rating"; break;
-    case ITEM_MOD_HASTE_RATING             	: return "Haste rating"; break;
-    case ITEM_MOD_EXPERTISE_RATING         	: return "Expertise rating"; break;
+    case ITEM_MOD_SPIRIT                   	: return "精神"; break;
+    case ITEM_MOD_DODGE_RATING             	: return "躲闪等级"; break;
+    case ITEM_MOD_PARRY_RATING             	: return "招架等级"; break;
+    case ITEM_MOD_HIT_RATING               	: return "命中等级"; break;
+    case ITEM_MOD_CRIT_RATING              	: return "爆击等级"; break;
+    case ITEM_MOD_HASTE_RATING             	: return "急速等级"; break;
+    case ITEM_MOD_EXPERTISE_RATING         	: return "精准等级"; break;
     default: return NULL;
     }
 }
@@ -62,25 +62,25 @@ static const char* GetSlotName(uint8 slot, WorldSession* /*session*/)
 {
     switch (slot)
     {
-    case EQUIPMENT_SLOT_HEAD      : return "Head";
-    case EQUIPMENT_SLOT_NECK      : return "Neck";
-    case EQUIPMENT_SLOT_SHOULDERS : return "Shoulders";
-    case EQUIPMENT_SLOT_BODY      : return "Shirt";
-    case EQUIPMENT_SLOT_CHEST     : return "Chest";
-    case EQUIPMENT_SLOT_WAIST     : return "Waist";
-    case EQUIPMENT_SLOT_LEGS      : return "Legs";
-    case EQUIPMENT_SLOT_FEET      : return "Feet";
-    case EQUIPMENT_SLOT_WRISTS    : return "Wrists";
-    case EQUIPMENT_SLOT_HANDS     : return "Hands";
-    case EQUIPMENT_SLOT_FINGER1   : return "Right finger";
-    case EQUIPMENT_SLOT_FINGER2   : return "Left finger";
-    case EQUIPMENT_SLOT_TRINKET1  : return "Right trinket";
-    case EQUIPMENT_SLOT_TRINKET2  : return "Left trinket";
-    case EQUIPMENT_SLOT_BACK      : return "Back";
-    case EQUIPMENT_SLOT_MAINHAND  : return "Main hand";
-    case EQUIPMENT_SLOT_OFFHAND   : return "Off hand";
-    case EQUIPMENT_SLOT_TABARD    : return "Tabard";
-    case EQUIPMENT_SLOT_RANGED    : return "Ranged";
+    case EQUIPMENT_SLOT_HEAD      : return "头部";
+    case EQUIPMENT_SLOT_NECK      : return "颈部";
+    case EQUIPMENT_SLOT_SHOULDERS : return "肩部";
+    case EQUIPMENT_SLOT_BODY      : return "衬衣";
+    case EQUIPMENT_SLOT_CHEST     : return "胸部";
+    case EQUIPMENT_SLOT_WAIST     : return "腰部";
+    case EQUIPMENT_SLOT_LEGS      : return "腿部";
+    case EQUIPMENT_SLOT_FEET      : return "脚";
+    case EQUIPMENT_SLOT_WRISTS    : return "手腕";
+    case EQUIPMENT_SLOT_HANDS     : return "手";
+    case EQUIPMENT_SLOT_FINGER1   : return "右手指";
+    case EQUIPMENT_SLOT_FINGER2   : return "左手指";
+    case EQUIPMENT_SLOT_TRINKET1  : return "右饰品";
+    case EQUIPMENT_SLOT_TRINKET2  : return "左饰品";
+    case EQUIPMENT_SLOT_BACK      : return "背部";
+    case EQUIPMENT_SLOT_MAINHAND  : return "主手";
+    case EQUIPMENT_SLOT_OFFHAND   : return "副手";
+    case EQUIPMENT_SLOT_TABARD    : return "战袍";
+    case EQUIPMENT_SLOT_RANGED    : return "远程";
     default: return NULL;
     }
 }
@@ -486,7 +486,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature) override
     {
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Select slot of the item to reforge:", 0, Melt(MAIN_MENU, 0));
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "选择要重铸的装备位置：", 0, Melt(MAIN_MENU, 0));
         for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
         {
             if (Item* invItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
@@ -494,8 +494,8 @@ public:
                     if (const char* slotname = GetSlotName(slot, player->GetSession()))
                         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, slotname, 0, Melt(SELECT_STAT_REDUCE, slot));
         }
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Remove reforges", 0, Melt(SELECT_RESTORE, 0));
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Update menu", 0, Melt(MAIN_MENU, 0));
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "取消重铸", 0, Melt(SELECT_RESTORE, 0));
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "更新菜单", 0, Melt(MAIN_MENU, 0));
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
         return true;
     }
@@ -518,7 +518,7 @@ public:
                 {
                     uint32 guidlow = invItem->GetGUID().GetCounter();
                     const ItemTemplate* pProto = invItem->GetTemplate();
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Stat to decrease:", sender, melt);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "将减少的属性：", sender, melt);
                     for (uint32 i = 0; i < pProto->StatsCount; ++i)
                     {
                         int32 stat_diff = ((int32)floorf((float)pProto->ItemStat[i].ItemStatValue * 0.4f));
@@ -530,18 +530,18 @@ public:
                                 player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, oss.str(), guidlow, Melt(SELECT_STAT_INCREASE, i));
                             }
                     }
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Back..", 0, Melt(MAIN_MENU, 0));
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "返回..", 0, Melt(MAIN_MENU, 0));
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 }
                 else
                 {
-                    player->GetSession()->SendNotification("Invalid item selected");
+                    player->GetSession()->SendNotification("选择了无效的项目");
                     OnGossipHello(player, creature);
                 }
             }
             else
             {
-                player->GetSession()->SendNotification("Invalid item selected");
+                player->GetSession()->SendNotification("选择了无效的项目");
                 OnGossipHello(player, creature);
             }
             break;
@@ -555,7 +555,7 @@ public:
                     const ItemTemplate* pProto = invItem->GetTemplate();
                     int32 stat_diff = ((int32)floorf((float)pProto->ItemStat[action].ItemStatValue * 0.4f));
 
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Stat to increase:", sender, melt);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "将增加的属性：", sender, melt);
                     for (uint8 i = 0; i < stat_type_max; ++i)
                     {
                         bool cont = false;
@@ -573,22 +573,22 @@ public:
                         {
                             std::ostringstream oss;
                             oss << stat_name << " |cFF3ECB3C+" << stat_diff << "|r";
-                            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, oss.str(), sender, Melt(i, (uint8)pProto->ItemStat[action].ItemStatType), "Are you sure you want to reforge\n\n" + pProto->Name1, (pProto->SellPrice < (10 * GOLD) ? (10 * GOLD) : pProto->SellPrice), false);
+                            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, oss.str(), sender, Melt(i, (uint8)pProto->ItemStat[action].ItemStatType), "你确定要重铸\n\n" + pProto->Name1, (pProto->SellPrice < (10 * GOLD) ? (10 * GOLD) : pProto->SellPrice), false);
                         }
                     }
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Back..", 0, Melt(SELECT_STAT_REDUCE, invItem->GetSlot()));
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "返回..", 0, Melt(SELECT_STAT_REDUCE, invItem->GetSlot()));
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
                 }
                 else
                 {
-                    player->GetSession()->SendNotification("Invalid item selected");
+                    player->GetSession()->SendNotification("选择了无效的项目");
                     OnGossipHello(player, creature);
                 }
             }
             break;
         case SELECT_RESTORE:
             {
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Select slot to remove reforge from:", sender, melt);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "选择要取消重铸的位置：", sender, melt);
                 if (!player->reforgeMap.empty())
                 {
                     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
@@ -596,11 +596,11 @@ public:
                         if (Item* invItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                             if (player->reforgeMap.find(invItem->GetGUID().GetCounter()) != player->reforgeMap.end())
                                 if (const char* slotname = GetSlotName(slot, player->GetSession()))
-                                    player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, slotname, invItem->GetGUID().GetCounter(), Melt(RESTORE, 0), "Remove reforge from\n\n" + invItem->GetTemplate()->Name1, 0, false);
+                                    player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, slotname, invItem->GetGUID().GetCounter(), Melt(RESTORE, 0), "取消重铸\n\n" + invItem->GetTemplate()->Name1, 0, false);
                     }
                 }
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Update menu", sender, melt);
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Back..", 0, Melt(MAIN_MENU, 0));
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "更新菜单", sender, melt);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "返回..", 0, Melt(MAIN_MENU, 0));
                 player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
             }
             break;
@@ -632,12 +632,12 @@ public:
                         }
                         else
                         {
-                            player->GetSession()->SendNotification("Not enough money");
+                            player->GetSession()->SendNotification("金币不足");
                         }
                     }
                     else
                     {
-                        player->GetSession()->SendNotification("Invalid item selected");
+                        player->GetSession()->SendNotification("选择了无效的项目");
                     }
                 }
                 OnGossipHello(player, creature);
