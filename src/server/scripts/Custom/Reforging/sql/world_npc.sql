@@ -1,7 +1,7 @@
 SET
 @Entry = 190011,
-@Name = "走刀口重铸师",
-@Subname = "装备重铸";
+@Name = "璧板垁鍙ｉ噸閾稿笀",
+@Subname = "瑁呭閲嶉摳";
 
 -- delete
 delete from creature_template where entry=@Entry;

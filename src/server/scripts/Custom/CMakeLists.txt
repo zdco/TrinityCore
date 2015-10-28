@@ -13,13 +13,10 @@
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
 #  ${sources_Custom}
-<<<<<<< HEAD
     Custom/Transmog/Transmogrification.h
     Custom/Transmog/Transmogrification.cpp
     Custom/Transmog/Transmogrifier.cpp
-=======
     Custom/Reforging/Reforging.cpp
->>>>>>> rochet/reforging
 )
 
 message("  -> Prepared: Custom")
